@@ -1,0 +1,26 @@
+<div class='panel panel-primary' *ngIf='products?.length'>
+  <div class='panel-heading'>
+    {{pageTitle}}
+  </div>
+
+  <div class='panel-body'>
+    <div class='list-group'>
+      <!--
+        when user clicks one of the product items
+        we need to notify the component of the click event
+        so the component can set the current product property
+        in the service.
+      -->
+      <button type='button'
+              class='list-group-item'
+              *ngFor='let product of products'
+              (click) = 'onSelected(product)'
+      >
+        {{ product.productName }} ({{ product.productCode }})
+      </button>
+    </div>
+  </div>
+</div>
+<div *ngIf='errorMessage' class='alert alert-danger'>
+  Error: {{ errorMessage }}
+</div>
