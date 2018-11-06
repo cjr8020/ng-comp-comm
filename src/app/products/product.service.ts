@@ -8,6 +8,7 @@ import {of} from 'rxjs/observable/of';
 import {catchError, tap} from 'rxjs/operators';
 
 import {IProduct} from './product';
+import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 
 @Injectable()
 export class ProductService {
@@ -15,9 +16,16 @@ export class ProductService {
   private products: IProduct[];
 
   /* currently selected product */
-  currentProduct: IProduct | null;
+  // Subject containing the source of selected product data
+  private selectedProductSource: BehaviorSubject<IProduct>
+    = new BehaviorSubject<IProduct | null>(null);
+  selectedProductChanges$ = this.selectedProductSource.asObservable();
 
   constructor(private http: HttpClient) {
+  }
+
+  changeSelectedProduct(selectedProduct: IProduct | null): void {
+    this.selectedProductSource.next(selectedProduct);
   }
 
   getProducts(): Observable<IProduct[]> {
@@ -91,7 +99,7 @@ export class ProductService {
           if (foundIndex > -1) {
             this.products.splice(foundIndex, 1);
             // set current product selection to null after it was delete
-            this.currentProduct = null;
+            this.changeSelectedProduct(null);
           }
         }),
         catchError(this.handleError)
@@ -100,6 +108,8 @@ export class ProductService {
 
   /**
    * Creates a new product item.
+   * Uses `changeSelectedProduct()` to update the BehaviorSubject which
+   * will push out a notification to subscribers
    * @param product
    * @param headers
    */
@@ -111,7 +121,7 @@ export class ProductService {
           console.log('createProduct: ' + JSON.stringify(data));
           this.products.push(data);
           // set currently selected product to the inserted item
-          this.currentProduct = data;
+          this.changeSelectedProduct(data);
         }),
         catchError(this.handleError)
       );
